@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PokemonRoll
 {
-    class OriginalTrainer
+    class TrainerID
     {
-        string name;
     }
 }

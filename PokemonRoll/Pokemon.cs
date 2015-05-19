@@ -731,10 +731,12 @@ namespace PokemonRoll
     {
         IDS _id;
         int _level;
-        OriginalTrainer _ot;
-        public Pokemon(IDS id, int level, OriginalTrainer ot)
+        TrainerID _ot;
+        public Pokemon(IDS id, int level, TrainerID ot)
         {
-
+            _id = id;
+            _level = level;
+            _ot = ot;
         }
     }
 }

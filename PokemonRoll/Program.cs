@@ -8,13 +8,9 @@ namespace PokemonRoll
 {
     class Program
     {
-
-       
-
         static void Main(string[] args)
         {
             Game.Instance.start();
-            
         }
     }
 }

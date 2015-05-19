@@ -9,14 +9,13 @@ namespace PokemonRoll
     class Game
     {
         private static Game instance;
-         List<Pokemon> listofPokes; //0-5 are party. else are pc.
+         
         Random rand = new Random();
-        OriginalTrainer me;
+        Player me;
         bool ingame;
 
         private Game() {
-            listofPokes = new List<Pokemon>();
-            me = new OriginalTrainer();
+            me = new Player();
         }
 
         public static Game Instance
@@ -52,23 +51,27 @@ namespace PokemonRoll
                         doAdventureRoll();
                         break;
                     case "2":
-                        //PC
-                        //Heal All Pokemon
-                        //Withdraw?
-                        //Buy?
-                        //Trade
-                        //Select poke from PC
-                        //Generate tradecode
-                        //Waint for input tradecode
+                        doPokemonCenter();
                         break;
                     default:
                         break;
                 }
-                
-                
-                
                 Console.ReadLine();
             }
+        }
+
+        //Events
+
+        private void doPokemonCenter()
+        {
+            //PC
+            //Heal All Pokemon
+            //Withdraw?
+            //Buy?
+            //Trade
+            //Select poke from PC
+            //Generate tradecode
+            //Waint for input tradecode
         }
 
         private void doAdventureRoll()
@@ -104,15 +107,25 @@ namespace PokemonRoll
 
         private void do_eggEvent()
         {
-            //Egg
-            //Have egg?
-            //Hatch
-            //else
-            //Give egg
+            if(me.hasegg)
+            {
+                Console.WriteLine("The egg in your backpack shakes violently!");
+                Console.Write("Theres a cracking noise, and a ");
+                //ROLL PKMN
+                Console.WriteLine(" hatches from the egg!");
+                me.hasegg = false;
+            }
+            else
+            {
+                Console.WriteLine("On the side of the road, you find a pokemon egg!");
+                Console.WriteLine("You place the egg in your backpack.");
+                me.hasegg = true;
+            }
         }
 
         private void do_trainer()
         {
+            Console.WriteLine("TBATTLE");
             //Trainer
             //Battle bla bla bla
         }
@@ -163,10 +176,11 @@ namespace PokemonRoll
 
         public void newGame()
         {
+            Console.WriteLine("Hello there!");
             Console.WriteLine("Welcome to the world of Pokemon!");
             Console.WriteLine("I will be your guide on this adventure.");
             Console.Write("My name is professer ");
-            switch(rand.Next(6))
+            switch(rand.Next(7))
             {
                 case 0:
                     Console.WriteLine("Oak");
@@ -194,10 +208,9 @@ namespace PokemonRoll
                     break;
                 default:
                     Console.WriteLine("Oak");
-                    Console.WriteLine("I Appologise, but it appears that all the other trainers, took the pokemon, and all we have left is a pikachu.");
+                    Console.WriteLine("I Appologise, but it appears that all the other trainers took the pokemon, and all we have left is a pikachu.");
                     giveOptionToChooseRandomPokemon(IDS.PIKACHU);
                     break;
-
             }
 
         }
@@ -218,7 +231,7 @@ namespace PokemonRoll
                 int inputint = Int32.Parse(input);
                 if(inputint <= list.Length && inputint >= 0)
                 {
-                    listofPokes.Add(new Pokemon(list[inputint],5,me));
+                    me.listofPokes.Add(new Pokemon(list[inputint],5,me.id));
                     optionValid = true;
                 }
                 Console.WriteLine("May you and {0} value and cherish eachother forever!",getPokemonName(list[inputint]));
@@ -228,6 +241,12 @@ namespace PokemonRoll
         private string getPokemonName(IDS id)
         {
             return Enum.GetName(typeof(IDS), id);;
+        }
+
+        private IDS getRandomPoke()
+        {
+            int pokeid = rand.Next(720) + 1;
+            return (IDS)pokeid;
         }
     }
 }
