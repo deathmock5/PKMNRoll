@@ -729,14 +729,54 @@ namespace PokemonRoll
         HOOPA = 720};
     class Pokemon
     {
-        IDS _id;
-        int _level;
-        TrainerID _ot;
+        public IDS _id;
+        public int _level;
+        public TrainerID _ot;
+        public bool isshiny = false;
+        public bool fainted = false;
+
         public Pokemon(IDS id, int level, TrainerID ot)
         {
             _id = id;
             _level = level;
             _ot = ot;
+        }
+
+        public string getName()
+        {
+            if(isshiny)
+            {
+                return "SHINY " + getName(_id);
+            }
+            return getName(_id);
+        }
+
+        public static string getName(IDS id)
+        {
+            String name = Enum.GetName(typeof(IDS), id).ToLower();
+            name = char.ToUpper(name[0]) + name.Substring(1);
+            return name;
+        }
+
+        internal void gainLvs(int lvchoice)
+        {
+            if(isshiny)
+            {
+                lvchoice *= 2;
+            }
+            _level += lvchoice;
+            Console.WriteLine("{0} is now level {1}", getName(), _level);
+        }
+
+        public override string ToString()
+        {
+            return getName() + " LV " + _level;
+        }
+
+        internal void faint()
+        {
+            Console.WriteLine("{0} has fainted!", getName());
+            fainted = true;
         }
     }
 }

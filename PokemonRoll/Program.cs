@@ -10,6 +10,7 @@ namespace PokemonRoll
     {
         static void Main(string[] args)
         {
+            Console.Title = "PokeRoll by deathmock@gmail.com";
             Game.Instance.start();
         }
     }
