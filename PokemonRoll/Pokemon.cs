@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -727,7 +728,9 @@ namespace PokemonRoll
         ZYGARDE = 718,
         DIANCIE = 719,
         HOOPA = 720};
-    class Pokemon
+
+    [Serializable()]
+    class Pokemon : ISerializable
     {
         public IDS _id;
         public int _level;
@@ -742,6 +745,14 @@ namespace PokemonRoll
             _ot = ot;
         }
 
+        public Pokemon(SerializationInfo info, StreamingContext ctxt)
+        {
+            _id = (IDS)info.GetValue("pkmn_id", typeof(IDS));
+            _level = (int)info.GetValue("pkmn_lv", typeof(int));
+            _ot = (TrainerID)info.GetValue("pkmn_ot", typeof(TrainerID));
+            isshiny = (bool)info.GetValue("pkmn_isshiny", typeof(bool));
+            fainted = (bool)info.GetValue("pkmn_fainted", typeof(bool));
+        }
         public string getName()
         {
             if(isshiny)
@@ -777,6 +788,15 @@ namespace PokemonRoll
         {
             Console.WriteLine("{0} has fainted!", getName());
             fainted = true;
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("pkmn_id", _id);
+            info.AddValue("pkmn_lv", _level);
+            info.AddValue("pkmn_ot", _ot);
+            info.AddValue("pkmn_isshiny", isshiny);
+            info.AddValue("pkmn_fainted", fainted);
         }
     }
 }
