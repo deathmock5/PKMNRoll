@@ -21,6 +21,7 @@ namespace PokemonRoll
 
         private Game() {
             me = new Player();
+            Console.SetOut(new PKMNWriter());
         }
 
         public static Game Instance
@@ -37,84 +38,68 @@ namespace PokemonRoll
 
         public void start()
         {
-            Stream stream = null;
-            try
-            {
-                stream = File.Open("player.pkrg", FileMode.Open);
-                Console.Write("Loading safe file...");
-                me = (Player)bformatter.Deserialize(stream);
-                Console.WriteLine(" welcome back {0}!", me.name);
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine("Load failed");
-                newGame();//Welcome to the pokemon world roll
-            }
-            finally
-            {
-                stream.Close();
-            }
+            load();
             ingame = true;
             while (ingame)
             {
-                doSave();
+                save();
                 Console.WriteLine();
-                Console.WriteLine("Name: {0} ,badges: {1}, Cash: {2}, Dex: {3}",me.name,me.badges,me.cash,me.getDex());
-                me.ListParty();
-                Console.WriteLine(" <Description Of location>");
                 Console.WriteLine("1: Adventure!");
                 Console.WriteLine("2: Visit Pkmn Center");
-                string inputtxt = getOptionFromQuestion("What would you like to do:");
+                Console.WriteLine("3: Status");
+                int inputtxt = getIntOptionFromQuestion("What would you like to do:");
+                Console.WriteLine();
                 switch(inputtxt)
                 {
-                    case "1":
+                    case 1:
                         doAdventureRoll();
                         break;
-                    case "2":
+                    case 2:
                         doPokemonCenter();
+                        break;
+                    case 3:
+                        me.printStatus();
+                        me.printParty();
+                        me.printInventory();
+                        Console.WriteLine("<Description Of location>");
                         break;
                     default:
                         break;
                 }
-                Console.ReadLine();
             }
         }
 
-        private void doSave()
+        private void save()
         {
-            Console.WriteLine("Your game has been saved!");
             Stream stream = File.Open("player.pkrg", FileMode.Create);
             BinaryFormatter bformatter = new BinaryFormatter();
             bformatter.Serialize(stream, me);
             stream.Close();
+            Console.WriteLine("~2Your game has been saved!");
         }
-
-        //Events
-
-        private void doPokemonCenter()
+        private void load()
         {
-            Console.WriteLine("Hello! and welcome to the pokemon Center!");
-            Console.WriteLine("Let me heal your pokemon for you.");
-            foreach(Pokemon poke in me.listofPokes)
+            Stream stream = null;
+            try
             {
-                if(poke.fainted)
+                Console.Write("~2Loading safe file...");
+                stream = File.Open("player.pkrg", FileMode.Open);
+                me = (Player)bformatter.Deserialize(stream);
+                Console.WriteLine(" welcome back {0}!", me.name);
+            }
+            catch
+            {
+                Console.WriteLine("~4Load failed");
+                newGame();//Welcome to the pokemon world roll
+            }
+            finally
+            {
+                if (stream != null)
                 {
-                    poke.fainted = false;
-                    Console.WriteLine("{0} has been healed!",poke);
+                    stream.Close();
                 }
             }
-            Console.WriteLine(" 0: PC(Move pokemon)");
-            Console.WriteLine(" 1: Store");
-            Console.WriteLine(" 2: Trade");
-            string input = getOptionFromQuestion("Im nurse joy, how can I help you?:");
-            //Withdraw?
-            //Buy?
-            //Trade
-            //Select poke from PC
-            //Generate tradecode
-            //Waint for input tradecode
         }
-
         private void doAdventureRoll()
         {
             Console.WriteLine();
@@ -148,6 +133,12 @@ namespace PokemonRoll
             cycles++;
         }
 
+        private string getRandomName()
+        {
+            return "nobsy";
+        }
+
+        //Events
         private void do_eggEvent()
         {
             if(me.hasegg)
@@ -199,71 +190,32 @@ namespace PokemonRoll
                 me.hasegg = true;
             }
         }
-
         private void do_trainer()
         {
-            Console.WriteLine("'Hey you! Stop right there trainer scum!'");
-            int numpokes = rand.Next(rand.Next(rand.Next(5))) + 1;
-            Pokemon pokeout = null;
-            Pokemon pokebtl = null;
-            bool won = true;
-            while(numpokes >0)
+            string trainername = getRandomName();
+            int cash = rand.Next(200) + 100;
+            if (trainerBattle(trainername,cash,2))
             {
-                if(pokebtl == null)
-                {
-                    pokebtl = getRandomPoke();
-                    Console.WriteLine("Trainer sends out: {0}", pokebtl.getName());
-                }
-                if(pokeout == null)
-                {
-                    try
-                    {
-                        pokeout = me.getFirstPokemonInParty();
-                    }
-                    catch(Exception e)
-                    {
-                        //They have no pokemon left.
-                        do_loose();
-                        won = false;
-                        break;
-                    }
-                   Console.WriteLine("GO {0}!",pokeout.getName());
-                }
-                Console.WriteLine("Your pokemon clash in furious battle!");
-                int partylevel = me.getPartyLevel();
-                if (partylevel > rand.Next(partylevel) + cycles)
-                {
-                    pokebtl.faint();
-                    numpokes--;
-                    pokebtl = null;
-                }
-                else
-                {
-                    pokeout.faint();
-                    pokeout = null;
-                }
-            }
-            //Battle over.
-            if(won)
-            {
-                Console.WriteLine("You have defeated trainer!.");
-                Console.WriteLine("You gain 200$.");
-                Console.WriteLine("Trainer hands you 5 rare candys.");
+                Console.WriteLine("You have defeated {0}!.", trainername);
+                Console.WriteLine("You gain {0}$.",cash);
+                Console.WriteLine("{0} hands you {1} rare candys.", trainername,5);
                 giveOptionToGivePokemonLevels(5);
             }
             else
             {
-                //Loose 100$
+                Console.WriteLine("You have been defeated by {0}!.", trainername);
+                cash = Convert.ToInt32(me.cash * 0.1);
+                Console.WriteLine("You loose {0}$ by loosing!.", cash);
+                me.cash -= cash;
+                do_loose();
             }
         }
-
         private void do_loose()
         {
             Console.WriteLine("You have no more healty pokemon avaliable to you.");
             Console.WriteLine("Your failure causes you to somehow loose consiousness.");
             Console.WriteLine("Somehow you wake up in a pokemon center.");
         }
-
         private void do_teamRocket()
         {
             //Team Rocket
@@ -275,13 +227,11 @@ namespace PokemonRoll
             //else
             //Faint
         }
-
         private void do_gymbattle()
         {
             //GymBattle
             //fightGym(currentgymindex++)
         }
-
         private void do_wildEncounter()
         {
             bool wildpokealive = true;
@@ -295,15 +245,15 @@ namespace PokemonRoll
                 Console.WriteLine();
                 Console.WriteLine(" 0: Catch");
                 Console.WriteLine(" 1: Battle");
-                String input = getOptionFromQuestion("What do you want to do?:");
+                int input = getIntOptionFromQuestion("What do you want to do?:");
                 
-                if (input == "0")
+                if (input == 0)
                 {
                     //Catch
                     int catchchance = me.getPokeballFromBackpack();
                     if(catchchance == 0)
                     {
-                        Console.WriteLine("You dont have any Pokeballs to use!");
+                        Console.WriteLine("~4You dont have any Pokeballs to use!");
                     }
                     else
                     {
@@ -311,7 +261,7 @@ namespace PokemonRoll
                         if (catchroll < catchchance)
                         {
                             Console.WriteLine("Ding...\n Ding...\n Ding...\n CLICK!");
-                            Console.WriteLine("Wild {0} was caught!",poke.getName());
+                            Console.WriteLine("~2Wild {0} was caught!",poke.getName());
                             me.addPokemon(poke);
                             wildpokealive = false;
                         }
@@ -322,12 +272,12 @@ namespace PokemonRoll
                                 Console.WriteLine("Ding...");
                             }
                             Console.WriteLine("POOF!");
-                            Console.WriteLine("Damn, it appeared it was caught!");
+                            Console.WriteLine("~6Damn, it appeared it was caught!");
                         }
                     }
                     
                 }
-                else if (input == "1")
+                else if (input == 1)
                 {
                     //TODO: a more realistic battle
                     Console.WriteLine("{0} used tackle!", firstpoke.getName());
@@ -338,7 +288,6 @@ namespace PokemonRoll
                 }
             }
         }
-
         private void do_rareCandy()
         {
             //Rare Candy
@@ -346,7 +295,6 @@ namespace PokemonRoll
             Console.WriteLine("You find 15 Rare candys!");
             giveOptionToGivePokemonLevels(15);
         }
-
         private void do_visitLocation()
         {
             //Visit location
@@ -355,7 +303,118 @@ namespace PokemonRoll
             //Ruins
             //Cave
         }
+        private void doPokemonCenter()
+        {
+            Console.WriteLine("Hello! and welcome to the pokemon Center!");
+            Console.WriteLine("Let me heal your pokemon for you.");
 
+            List<Pokemon> party = me.getParty();
+            foreach (Pokemon poke in party)
+            {
+                if (poke.fainted)
+                {
+                    poke.fainted = false;
+                    Console.WriteLine("{0} has been healed!", poke);
+                }
+            }
+            bool useing = true;
+            while (useing)
+            {
+                Console.WriteLine("\n 1: PC(Move pokemon)");
+                Console.WriteLine(" 2: Store");
+                Console.WriteLine(" 3: Trade");
+                Console.WriteLine(" 4: Leave");
+                int input = getIntOptionFromQuestion("Im nurse joy, how can I help you?:");
+                switch (input)
+                {
+                    case 1:
+                        do_PokemonCenter_PC();
+                        break;
+                    case 2:
+                        do_PokemonCenter_Mart();
+                        break;
+                    case 3:
+                        do_PokemonCenter_Link();
+                        break;
+                    case 4:
+                        useing = false;
+                        Console.WriteLine("Have a nice day!");
+                        break;
+                }
+            }
+        }
+        private void do_PokemonCenter_PC()
+        {
+            //Withdraw?
+            Console.WriteLine("Booted up pc.");
+            Console.WriteLine("Accessing pokemon storage system.");
+            Console.WriteLine("TODO:");
+        }
+        private void do_PokemonCenter_Mart()
+        {
+            bool inuse = true;
+            while (inuse)
+            {
+                List<ItemID> shopitems = new List<ItemID>();
+                shopitems.Add(ItemID.pokeball);
+                shopitems.Add(ItemID.greatball);
+                shopitems.Add(ItemID.ultraball);
+                shopitems.Add(ItemID.revive);
+                shopitems.Add(ItemID.rare_candy);
+                me.printCash();
+                for (int i = 0; i < shopitems.Count; i++)
+                {
+                    Console.WriteLine(" {0}: {1}    -   {2}$", i, shopitems[i]._name, shopitems[i]._cost);
+                }
+                Console.WriteLine(" {0}:  Leave", shopitems.Count);
+                int input = getIntOptionFromQuestion("What items do you need?:");
+                int amount = 0;
+                int cost = 0;
+                if (input != shopitems.Count && input < shopitems.Count)
+                {
+                    amount = getIntOptionFromQuestion("How many do you need (0-9)?:");
+                    if (amount > 0)
+                    {
+                        cost = shopitems[input]._cost * amount;
+                        if (me.cash >= cost)
+                        {
+                            Item itemtoadd = new Item(shopitems[input], amount);
+                            Console.WriteLine("You purchase {0} {1}s costing {2}$", amount, shopitems[input], cost);
+                            if (itemtoadd.id == ItemID.rare_candy)
+                            {
+                                giveOptionToGivePokemonLevels(1);
+                            }
+                            else
+                            {
+                                me.addItems(itemtoadd);
+                                me.cash -= cost;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("You cant aford {0} {1}s that costs {2} and you only have {3}", amount, shopitems[input], cost, me.cash);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Nurse joy wonders how you buy {0} {1}s.", amount, shopitems[input]);
+                    }
+                }
+                else
+                {
+                    inuse = false;
+                }
+            }
+        }
+        private void do_PokemonCenter_Link()
+        {
+            //Trade
+            //Select poke from PC
+            //Generate tradecode
+            //Waint for input tradecode
+        }
+
+        //Other
         public void newGame()
         {
             Console.Write("Welcome to the world of ");
@@ -407,26 +466,23 @@ namespace PokemonRoll
         {
             while(amount > 1)
             {
-                me.ListParty();
-                int pchoice = 0;
+                me.printParty();
                 try
                 {
-                    string input = getOptionFromQuestion("Choose a pokemon to give levels to:");
-                    pchoice = Int32.Parse(input);
-                    Pokemon poke = me.getPartyPokemon(pchoice);
-                    input = getOptionFromQuestion("Give " + poke.getName()+ " how many levels (MAX:" + input + "):");
-                    int lvchoice = Int32.Parse(input);
-                    if(lvchoice <= amount)
+                    int input = getIntOptionFromQuestion("Choose a pokemon to give levels to:");
+                    Pokemon poke = me.getPartyPokemon(input);
+                    input = getIntOptionFromQuestion("Give " + poke.getName()+ " how many levels (MAX:" + amount + "):");
+                    if(input <= amount)
                     {
-                        poke.gainLvs(lvchoice);
-                        amount -= lvchoice;
+                        poke.gainLvs(input);
+                        amount -= input;
                     }
                     else
                     {
                         throw new InvalidOperationException();
                     }
                 }
-                catch(Exception e)
+                catch
                 {
                     Console.WriteLine("You get a text from the professer: 'You can't do that.'");
                     Console.ReadLine();
@@ -445,28 +501,22 @@ namespace PokemonRoll
                 {
                     Console.WriteLine(" {0:G}: {1:G}", i, Pokemon.getName(list[i]));
                 }
-                string input = getOptionFromQuestion("What is your choice:");
-                int inputint = 0;
-                while (!int.TryParse(input, out inputint))
+                int input = getIntOptionFromQuestion("What is your choice:");
+                char cinput = '0';
+                if(input < list.Length && input >= 0)
                 {
-                    Console.Write("Invalid. ");
-                    input = getOptionFromQuestion("What is your choice:");
-                }
-
-                if(inputint < list.Length && inputint >= 0)
-                {
-                    input = getOptionFromQuestion("You point at the " + Pokemon.getName(list[inputint]) + " are you sure? (y/n):");
-                    if(Convert.ToChar(input) == 'Y')
+                    cinput = getCharOptionFromQuestion("You point at the " + Pokemon.getName(list[input]) + " are you sure? (y/n):");
+                    if(Convert.ToChar(cinput) == 'Y')
                     {
                         haschosen = true;
-                        Console.WriteLine("May you and {0} value and cherish each other forever!", Pokemon.getName(list[inputint]));
-                        me.addPokemon(new Pokemon(list[inputint], 5, me.id));
+                        Console.WriteLine("May you and {0} value and cherish each other forever!", Pokemon.getName(list[input]));
+                        me.addPokemon(new Pokemon(list[input], 5, me.id));
                     }
                 }
                 else
                 {
-                    input = getOptionFromQuestion("You point at the table are you sure? (y/n):");
-                    if (Convert.ToChar(input) == 'Y')
+                    cinput = getCharOptionFromQuestion("You point at the table are you sure? (y/n):");
+                    if (input == 'Y')
                     {
                         Console.WriteLine("Um... the table is not a pokemon, least not yet.");
                     }
@@ -486,18 +536,87 @@ namespace PokemonRoll
             return poke;
         }
 
-        public string getOptionFromQuestion(string question)
+        public string getStringOptionFromQuestion(string question)
+        {
+            Console.Write("~3{0}", question);
+            string input = Console.ReadLine();
+            return input;
+        }
+
+        public int getIntOptionFromQuestion(string question)
         {
             ConsoleKeyInfo input;
-            Console.Write(question);
-            input = Console.ReadKey();
-            Console.WriteLine();
-            string output = input.Key.ToString();
-            if(output.Length > 1)
+            Console.Write("~3{0}",question);
+            int outint = 0;
+            string output = "";
+            while(!Int32.TryParse(output,out outint))
             {
-                return input.Key.ToString().Substring(1);
+                input = Console.ReadKey();
+                output = input.Key.ToString();
+                if (output.Length > 1)
+                {
+                    output = input.Key.ToString().Substring(1);
+                }
             }
-            return output;
+            Console.WriteLine(outint);
+            return outint;
+        }
+
+        public char getCharOptionFromQuestion(string question)
+        {
+            ConsoleKeyInfo input;
+            Console.Write("~3{0}", question);
+            input = Console.ReadKey();
+            string output = input.Key.ToString();
+            if (output.Length > 1)
+            {
+                output = input.Key.ToString().Substring(1);
+            }
+            Console.WriteLine(output);
+            return output[0];
+        }
+
+        public bool trainerBattle(string trainername,int cash,int rarecandys)
+        {
+            Console.WriteLine("'Hey you! Stop right there in the name of senseless battle!'");
+            int numpokes = rand.Next(rand.Next(rand.Next(5))) + 1;
+            Pokemon pokeout = null;
+            Pokemon pokebtl = null;
+            while (numpokes > 0)
+            {
+                if (pokebtl == null)
+                {
+                    pokebtl = getRandomPoke();
+                    Console.WriteLine("{1} sends out: {0}", pokebtl.getName(), trainername);
+                }
+                if (pokeout == null)
+                {
+                    try
+                    {
+                        pokeout = me.getFirstPokemonInParty();
+                    }
+                    catch
+                    {
+                        //yoy have no pokemon left.
+                        return false;
+                    }
+                    Console.WriteLine("GO {0}!", pokeout.getName());
+                }
+                Console.WriteLine("Your pokemon clash in furious battle!");
+                int partylevel = me.getPartyLevel();
+                if (partylevel > rand.Next(partylevel) + cycles)
+                {
+                    pokebtl.faint();
+                    numpokes--;
+                    pokebtl = null;
+                }
+                else
+                {
+                    pokeout.faint();
+                    pokeout = null;
+                }
+            }
+            return true;
         }
     }
 }
