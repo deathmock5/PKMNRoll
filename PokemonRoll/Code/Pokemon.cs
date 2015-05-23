@@ -757,7 +757,7 @@ namespace PokemonRoll
         {
             if(isshiny)
             {
-                return "SHINY " + getName(_id);
+                return "~6" + getName(_id);
             }
             return getName(_id);
         }
@@ -776,17 +776,24 @@ namespace PokemonRoll
                 lvchoice *= 2;
             }
             _level += lvchoice;
-            Console.WriteLine("{0} is now level {1}", getName(), _level);
+            Console.WriteLine("~a{0} is now level {1}!", getName(), _level);
         }
 
         public override string ToString()
         {
-            return getName() + " LV " + _level;
+            return getName() + "~8 LV " + _level;
         }
 
-        internal void faint()
+        internal void faint(bool freindly)
         {
-            Console.WriteLine("{0} has fainted!", getName());
+            if(freindly)
+            {
+                Console.WriteLine("~4{0}~4 has fainted!", getName());
+            }
+            else
+            {
+                Console.WriteLine("~2{0}~2 has fainted!", getName());
+            }
             fainted = true;
         }
 
