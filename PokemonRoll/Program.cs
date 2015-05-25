@@ -8,6 +8,7 @@ namespace PokemonRoll
 {
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
             Console.Title = "PokeRoll by deathmock@gmail.com";

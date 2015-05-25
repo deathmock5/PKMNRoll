@@ -43,7 +43,7 @@ namespace PokemonRoll
         }
         public void printCash()
         {
-            Console.WriteLine("You curently have {0}.", cash);
+            Console.WriteLine("You curently have {0}$.", cash);
         }
         public void printInventory()
         {
@@ -220,5 +220,19 @@ namespace PokemonRoll
             listofitems.Add(itemtoadd);
         }
 
+
+        internal bool getRevive()
+        {
+            Item revive = getItemIndexFromInventory(ItemID.revive);
+            if (revive != null)
+            {
+                if (revive.amount > 0)
+                {
+                    revive.amount -= 1;
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

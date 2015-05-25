@@ -7,6 +7,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Newtonsoft.Json;
 
 namespace PokemonRoll
@@ -101,33 +102,43 @@ namespace PokemonRoll
         }
         private void doAdventureRoll()
         {
+            //500 WildPokemon();
+            //650	Trainer();
+            //750	gymBattle()
+            //800	visitLocation();
+            //900	Egg()
+            //950	Rare Candy
+            //999	Rocket
             Console.WriteLine();
-            int action = 3;// rand.Next(6);
-            switch (action)
+            int action = rand.Next(999);
+            log("Adventure:" + action);
+            if(action < 500)
             {
-                case 0:
-                    do_visitLocation();
-                    break;
-                case 1:
-                    do_rareCandy();
-                    break;
-                case 2:
-                    do_wildEncounter();
-                    break;
-                case 3:
-                    do_gymbattle();
-                    break;
-                case 4:
-                    do_teamRocket();
-                    break;
-                case 5:
-                    do_trainer();
-                    break;
-                case 6:
-                    do_eggEvent();
-                    break;
-                default:
-                    break;
+                do_wildEncounter();
+            }
+            else if(action < 650)
+            {
+                do_trainer();
+            }
+            else if(action < 750)
+            {
+                do_gymbattle();
+            }
+            else if(action < 800)
+            {
+                do_visitLocation();
+            }
+            else if(action < 900)
+            {
+                do_eggEvent();
+            }
+            else if(action < 950)
+            {
+                do_rareCandy();
+            }
+            else
+            {
+                do_teamRocket();
             }
             cycles++;
         }
@@ -178,7 +189,7 @@ namespace PokemonRoll
                         eggpoke = new Pokemon(IDS.EEVEE, 5, me.id);
                         break;
                 }
-                Console.Write("Theres a cracking noise, and a {0} hatches from the egg!", eggpoke.getName());
+                Console.WriteLine("~2Theres a cracking noise, and a {0}~2 hatches from the egg!", eggpoke.getName());
                 me.addPokemon(eggpoke);
                 me.hasegg = false;
             }
@@ -194,9 +205,8 @@ namespace PokemonRoll
             string trainername = getRandomName();
             int cash = rand.Next(200) + 100;
             Console.WriteLine("'Hey you! Stop right there in the name of senseless battle!'");
-            if (trainerBattle(trainername, rand.Next(me.getPartyLevel()) + cycles))
+            if (trainerBattle(trainername, 1, rand.Next(me.getPartyLevel()) + cycles))
             {
-                Console.WriteLine("You have defeated {0}!.", trainername);
                 Console.WriteLine("You gain {0}$.", cash);
                 me.cash += cash;
                 Console.WriteLine("{0} hands you {1} rare candys.", trainername, 5);
@@ -204,7 +214,6 @@ namespace PokemonRoll
             }
             else
             {
-                Console.WriteLine("You have been defeated by {0}!.", trainername);
                 cash = Convert.ToInt32(me.cash * 0.1);
                 Console.WriteLine("You loose {0}$ by loosing!.", cash);
                 me.cash -= cash;
@@ -231,12 +240,12 @@ namespace PokemonRoll
                     int stolen = rand.Next(me.listofPokes.Count);
                     stolenpoke = me.listofPokes[stolen];
                     me.listofPokes.Remove(stolenpoke);
-                    Console.WriteLine("~4{0} has snached {1}!", name, stolenpoke);
+                    Console.WriteLine("~4{0} has snached {1}~4!", name, stolenpoke);
                     Console.WriteLine("You chase down {0} and force him to battle.", name);
-                    if (trainerBattle(name, rand.Next(me.getPartyLevel()) + cycles))
+                    if (trainerBattle(name, 2,rand.Next(me.getPartyLevel()) + cycles))
                     {
                         //return poke
-                        Console.WriteLine("~2You take back {0} from {1}!", stolenpoke, name);
+                        Console.WriteLine("~2You take back {0}~2 from {1}!", stolenpoke, name);
                         me.listofPokes.Add(stolenpoke);
                     }
                     else
@@ -254,7 +263,7 @@ namespace PokemonRoll
                     Console.WriteLine("~6{0} tried to snach one of your pokemon but fails.", name);
                 }
             }
-            Console.WriteLine("You puch {0} in the nose breaking it, they pass out.", name);
+            Console.WriteLine("You punch {0} in the nose breaking it, they pass out.", name);
             Console.WriteLine("You drag him back to the police station.");
             int candys = rand.Next(5) + 10;
             int cash = rand.Next(400) + 400;
@@ -264,9 +273,25 @@ namespace PokemonRoll
         }
         private void do_gymbattle()
         {
-            if (!fightGym())
+            Console.WriteLine("You find a flier requesting trainers of great skill chalenge themselves by running through the pokemon leauge.");
+            if (getBoolOptionFromQuestion("Interested?"))
             {
-
+                if (me.badges % 8 == 0)
+                {
+                    //Posible Elite4
+                    if (me.badges / 8 != me.champ)
+                    {
+                        fightLeauge();
+                        return;
+                    }
+                }
+                fightGym();
+                return;
+            }
+            else
+            {
+                Console.WriteLine("You toss the flier. Proclaming: 'Nope.'");
+                return;
             }
         }
         private void do_wildEncounter()
@@ -318,7 +343,7 @@ namespace PokemonRoll
                 {
                     //TODO: a more realistic battle
                     Console.WriteLine("{0} used tackle!", firstpoke.getName());
-                    Console.WriteLine("{0} was defeated!", poke.getName());
+                    Console.WriteLine("~2{0}~2 was defeated!", poke.getName());
                     Console.WriteLine("You find 2 rare candy on its body.");
                     giveOptionToGivePokemonLevels(2);
                     wildpokealive = false;
@@ -329,7 +354,7 @@ namespace PokemonRoll
         {
             //Rare Candy
             Console.WriteLine("You reach a dead end, and for some unimaginable reason you decide to search the ground.");
-            Console.WriteLine("You find 15 Rare candys!");
+            Console.WriteLine("~2You find 15 Rare candys!");
             giveOptionToGivePokemonLevels(15);
         }
         private void do_visitLocation()
@@ -339,6 +364,7 @@ namespace PokemonRoll
             //Forest
             //Ruins
             //Cave
+            Console.WriteLine("TODO: travel.");
         }
         private void do_PokemonCenter()
         {
@@ -351,14 +377,14 @@ namespace PokemonRoll
                 if (poke.fainted)
                 {
                     poke.fainted = false;
-                    Console.WriteLine("{0} has been healed!", poke);
+                    Console.WriteLine(" {0}~2 has been healed!", poke);
                 }
             }
             bool useing = true;
             while (useing)
             {
                 Console.WriteLine("\n 1: PC(Move pokemon)");
-                Console.WriteLine(" 2: Store");
+                Console.WriteLine(" 2: Mart");
                 Console.WriteLine(" 3: Trade");
                 Console.WriteLine(" 4: Leave");
                 int input = getIntOptionFromQuestion("Im nurse joy, how can I help you?:");
@@ -416,7 +442,7 @@ namespace PokemonRoll
                         if (me.cash >= cost)
                         {
                             Item itemtoadd = new Item(shopitems[input], amount);
-                            Console.WriteLine("You purchase {0} {1}s costing {2}$", amount, shopitems[input], cost);
+                            Console.WriteLine("~2You purchase {0} {1}s costing {2}$", amount, shopitems[input], cost);
                             if (itemtoadd.id == ItemID.rare_candy)
                             {
                                 giveOptionToGivePokemonLevels(1);
@@ -449,6 +475,10 @@ namespace PokemonRoll
             //Select poke from PC
             //Generate tradecode
             //Waint for input tradecode
+
+            Pokemon poketotrade = me.getFirstPokemonInParty();
+            string serial = JsonConvert.SerializeObject(poketotrade);
+            Clipboard.SetText(poketotrade.ToString() + '\n' +  serial +'\n' + CryptographyHelper.ComputeHash(serial));
         }
 
         //Other
@@ -502,7 +532,7 @@ namespace PokemonRoll
 
         public void giveOptionToGivePokemonLevels(int amount)
         {
-            while (amount > 1)
+            while (amount > 0)
             {
                 me.printParty();
                 try
@@ -510,20 +540,25 @@ namespace PokemonRoll
                     int input = getIntOptionFromQuestion("Choose a pokemon to give levels to:");
                     Pokemon poke = me.getPartyPokemon(input);
                     input = getIntOptionFromQuestion("Give " + poke.getName() + "~3 how many levels (MAX:" + amount + "):");
-                    if (input <= amount)
+                    if(input == 0 || input < 0)
+                    {
+                        throw new InvalidOperationException("Cant give pokemon 0>= levels.");
+                    }
+                    else if (input <= amount)
                     {
                         poke.gainLvs(input);
                         amount -= input;
                     }
                     else
                     {
-                        throw new InvalidOperationException();
+                        poke.gainLvs(amount);
+                        amount -= input;
                     }
                 }
-                catch
+                catch(Exception e)
                 {
+                    log(e.Message);
                     Console.WriteLine("You get a text from the professer: 'You can't do that.'");
-                    Console.ReadLine();
                 }
             }
         }
@@ -540,11 +575,9 @@ namespace PokemonRoll
                     Console.WriteLine(" {0:G}: {1:G}", i, Pokemon.getName(list[i]));
                 }
                 int input = getIntOptionFromQuestion("What is your choice:");
-                char cinput = '0';
                 if (input < list.Length && input >= 0)
                 {
-                    cinput = getCharOptionFromQuestion("You point at the " + Pokemon.getName(list[input]) + " are you sure? (y/n):");
-                    if (Convert.ToChar(cinput) == 'Y')
+                    if (getBoolOptionFromQuestion("You point at the " + Pokemon.getName(list[input]) + " are you sure?"))
                     {
                         haschosen = true;
                         Console.WriteLine("May you and {0} value and cherish each other forever!", Pokemon.getName(list[input]));
@@ -553,8 +586,7 @@ namespace PokemonRoll
                 }
                 else
                 {
-                    cinput = getCharOptionFromQuestion("You point at the table are you sure? (y/n):");
-                    if (input == 'Y')
+                    if (getBoolOptionFromQuestion("You point at the table are you sure?"))
                     {
                         Console.WriteLine("Um... the table is not a pokemon, least not yet.");
                     }
@@ -615,11 +647,36 @@ namespace PokemonRoll
             return output[0];
         }
 
+        public bool getBoolOptionFromQuestion(string question)
+        {
+            bool valid = false;
+            bool output = false;
+            while(!valid)
+            {
+                char option = getCharOptionFromQuestion(question + "(y/n):");
+                if(option == 'Y')
+                {
+                    output = true;
+                    valid = true;
+                }
+                else if( option == 'N')
+                {
+                    valid = true;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid.");
+                }
+            }
+            return output;
+        }
+
         public bool trainerBattle(string trainername, int dificultyMod,int offset)
         {
             int numpokes = rand.Next(rand.Next(rand.Next(5))) + 1;
             Pokemon pokeout = null;
             Pokemon pokebtl = null;
+            bool first = true;
             while (numpokes > 0)
             {
                 if (pokebtl == null)
@@ -632,17 +689,26 @@ namespace PokemonRoll
                     try
                     {
                         pokeout = me.getFirstPokemonInParty();
+                        if(first)
+                        {
+                            Console.WriteLine("GO {0}~7!", pokeout.getName());
+                            first = false;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Your enemy is weak, GO {0}!", pokeout.getName());
+                        }
                     }
                     catch
                     {
+                        Console.WriteLine("~4You were defeated by {0}!", trainername);
                         return false;
                     }
-                    Console.WriteLine("GO {0}~7!", pokeout.getName());
                 }
                 Console.WriteLine("~3Your pokemon clash in furious battle!");
                 int partylevel = me.getPartyLevel();
                 int difficulty = rand.Next(Convert.ToInt32(me.getPartyLevel() * (0.22 * dificultyMod)) + (50 * (me.badges * me.badges))) + offset;
-                Console.WriteLine(";5         {0} . {1}", partylevel, difficulty);
+                log("PartyLv: " + partylevel + " difficulty:" +difficulty);
                 if (partylevel > difficulty)
                 {
                     pokebtl.faint(false);
@@ -652,68 +718,69 @@ namespace PokemonRoll
                 else
                 {
                     pokeout.faint(true);
-                    pokeout = null;
+                    if (me.getRevive())
+                    {
+                        Console.WriteLine("~2You use a revive from your pack!");
+                        pokeout.fainted = false;
+                    }
+                    else
+                    {
+                        pokeout = null;
+                    }
+                    offset -= pokeout._level;
                 }
             }
+            Console.WriteLine("~2You have defeated {0}!", trainername);
             return true;
         }
 
+
+        private bool fightLeauge()
+        {
+            string name = "";
+            Console.WriteLine("You make your way to the pokemon leauge!");
+            //5x pokemon
+            int pokes = 5;
+            while (pokes-- > 0)
+            {
+                do_wildEncounter();
+            }
+            Console.WriteLine("After a long and arduess journey you make it to the leauge!");
+            do_PokemonCenter();
+            int members = 0;
+            while (members++ < 4)
+            {
+                Console.WriteLine("You step through the leauge doors, and they slam behind you");
+                name = "Elite 4 member " + Enum.GetName(typeof(Elite4), (me.champ + 1) * members);
+                Console.WriteLine("You are chalenged by {0}!", name);
+                if (!trainerBattle(name, members, 1000 * (me.champ + 1)))
+                {
+                    //Defeat
+                    return false;
+                }
+            }
+            //Beat the leauge!
+            Console.WriteLine("TODO: <Champion>");
+            Console.WriteLine("You have conqured the pokemon leauge!");
+            me.champ++;
+            return true;
+        }
         private bool fightGym()
         {
             string name = "";
             int cash = 0;
             int candys = 0;
-            if (me.badges % 8 == 0)
-            {
-                //Posible Elite4
-                if (me.badges / 8 != me.champ)
-                {
-                    Console.WriteLine("You make your way to the pokemon leauge!");
-                    //5x pokemon
-                    int pokes = 5;
-                    while (pokes-- > 0)
-                    {
-                        do_wildEncounter();
-                    }
-                    Console.WriteLine("After a long and arduess journy you make it to the leauge!");
-                    do_PokemonCenter();
-                    int members = 0;
-                    while (members++ < 4)
-                    {
-                        Console.WriteLine("You step through the leauge doors, and they slam behind you");
-                        name = "Elite 4 member " + Enum.GetName(typeof(Elite4), (me.champ + 1) * members);
-                        Console.WriteLine("You are chalenged by {0}!", name);
-                        if (trainerBattle(name, members,1000*(me.champ + 1)))
-                        {
-                            //Beat member
-                            Console.WriteLine("You have defeated {0}!", name);
-                        }
-                        else
-                        {
-                            //Defeat
-                            Console.WriteLine("You were defeated by {0}!", name);
-                            return false;
-                        }
-                    }
-                    //Beat the leauge!
-                    Console.WriteLine("TODO: <Champion>");
-                    Console.WriteLine("You have conqured the pokemon leauge!");
-                    me.champ++;
-                    return true;
-                }
-            }
-
-            Console.WriteLine("You come acrost a gym, and decide to take a crack at it.");
+            Console.WriteLine("You make your way to the nearest gym!");
+            Console.WriteLine("You then arrive and are imedeatly ambushed by trainers!");
             int trainers = 1;
             while (trainers++ != 4)
             {
                 name = "Gym asistant " + getRandomName();
                 cash = rand.Next(100 * trainers) + 100;
                 candys = rand.Next(4) + trainers;
-                if (trainerBattle(name, tr))
+                if (trainerBattle(name, trainers,100))
                 {
                     //Won
-                    Console.WriteLine("~2You have defeated {0}!.", name);
                     Console.WriteLine("You gain {0}$.", cash);
                     me.cash += cash;
                     Console.WriteLine("{0} hands you {1} rare candys.", name, candys);
@@ -723,7 +790,6 @@ namespace PokemonRoll
                 {
                     //Lost
                     cash = Convert.ToInt32(cash * 0.5);
-                    Console.WriteLine("~4You were defeated by {0}!.", name);
                     Console.WriteLine("You loose {0}$.", cash);
                     me.cash -= cash;
                     return false;
@@ -733,12 +799,10 @@ namespace PokemonRoll
             name = Enum.GetName(typeof(GymLeader), me.badges);
             cash = rand.Next(1000) + 100 * me.badges;
             candys = rand.Next(10) + me.badges + 1;
-            difficulty = (100 * (me.badges + 1));
             Console.WriteLine("You are chalenged by gym leader {0}!", name);
-            if (trainerBattle(name, difficulty))
+            if (trainerBattle(name, me.badges,100 * (me.badges + 1)))
             {
                 //Won!
-                Console.WriteLine("You have defeated {0}!", name);
                 Console.WriteLine("You gain {0}$.", cash);
                 me.cash += cash;
                 Console.WriteLine("{0} hands you {1} rare candys.", name, candys);
@@ -748,10 +812,17 @@ namespace PokemonRoll
                 return true;
             }
             Console.WriteLine("~4You loose consiousness due to your defeat as {0} cackles with laughter.", name);
-            Console.WriteLine("You wake up later in the pokemon center, with a bitter taste in your mouth.");
+            Console.WriteLine("You wake up later in the pokemon center, with the bitter taste of defeat in your mouth.");
             return false;
         }
 
-
+        public static void log(string message)
+        {
+            //logfile.log
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"logfile.log",true))
+            {
+                file.WriteLine(message);
+            }
+        }
     }
 }
