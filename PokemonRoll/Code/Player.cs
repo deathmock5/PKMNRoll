@@ -75,7 +75,10 @@ namespace PokemonRoll
             }
             for (int i = 0; i < maxsize; i++)
             {
-                pokes.Add(listofPokes[i]);
+                if(listofPokes[i] != null)
+                {
+                    pokes.Add(listofPokes[i]);
+                }
             }
             return pokes;
         }
@@ -102,7 +105,7 @@ namespace PokemonRoll
         {
             foreach(Pokemon poke in getParty())
             {
-                if(!poke.fainted)
+                if(poke != null && !poke.fainted)
                 {
                     return poke;
                 }
@@ -115,7 +118,7 @@ namespace PokemonRoll
             int level = 0;
             foreach (Pokemon poke in getParty())
             {
-                if (!poke.fainted)
+                if (poke != null && !poke.fainted)
                 {
                     level += poke._level;
                 }

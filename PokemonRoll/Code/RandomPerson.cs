@@ -34,37 +34,57 @@ namespace PokemonRoll
             while(running)
             {
                 mut.WaitOne(1000);
-                    if(names.Count() == 5)
-                    {
-                        mut.ReleaseMutex();
-                        Thread.Sleep(1000);
-                    }
-                    else
+                if(names.Count() == 5)
+                {
+                    mut.ReleaseMutex();
+                    Thread.Sleep(1000);
+                }
+                else
+                {
+                    string api = APIHelper.getApiCall("http://api.randomuser.me/?format=json");
+                    if(api != null)
                     {
                         //Pull the information.
-                        var obj = JsonConvert.DeserializeObject<dynamic>(APIHelper.getApiCall("http://api.randomuser.me/?format=json"));
+                        var obj = JsonConvert.DeserializeObject<dynamic>(api);
                         var result = obj.results;
                         var user = result[0].user;
                         var name = user.name;
-                        var first = name.first;
-                        names.Add((string)first);
-                        mut.ReleaseMutex();
+                        string first = (string)name.first;
+                        names.Add(UppercaseFirst(first));
                     }
+                    else
+                    {
+                        mut.ReleaseMutex();
+                        Game.log("The api call is not returning good data. exiting RandomUser thread.");
+                        running = false;
+                    }
+                }
             }
         }
 
         public static string getName()
         {
-            mut.WaitOne(1000);
+            //mut.WaitOne(1000);
             if(names.Count == 0)
             {
-                mut.ReleaseMutex();
+                //mut.ReleaseMutex();
                 return "Namless";
             }
             String name = names[names.Count - 1];
             names.Remove(name);
-            mut.ReleaseMutex();
+            //mut.ReleaseMutex();
             return name;
+        }
+
+        static string UppercaseFirst(string s)
+        {
+            // Check for empty string.
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+            // Return char and concat substring.
+            return char.ToUpper(s[0]) + s.Substring(1);
         }
     }
 }

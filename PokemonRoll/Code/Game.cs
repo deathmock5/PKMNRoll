@@ -17,7 +17,7 @@ namespace PokemonRoll
         private static Game instance;
 
         Random rand = new Random();
-        Player me;
+        public Player me;
         bool ingame;
         int cycles = 0;
 
@@ -237,16 +237,21 @@ namespace PokemonRoll
                 {
                     //roll pokemon stolen
                     Pokemon stolenpoke = null;
-                    int stolen = rand.Next(me.listofPokes.Count);
+                    int stolen = 5;
+                    if(me.listofPokes.Count < 6)
+                    {
+                        stolen = me.listofPokes.Count;
+                    }
+                    stolen = rand.Next(stolen);
                     stolenpoke = me.listofPokes[stolen];
-                    me.listofPokes.Remove(stolenpoke);
+                    me.listofPokes[stolen] = null;
                     Console.WriteLine("~4{0} has snached {1}~4!", name, stolenpoke);
                     Console.WriteLine("You chase down {0} and force him to battle.", name);
                     if (trainerBattle(name, 2,rand.Next(me.getPartyLevel()) + cycles))
                     {
                         //return poke
                         Console.WriteLine("~2You take back {0}~2 from {1}!", stolenpoke, name);
-                        me.listofPokes.Add(stolenpoke);
+                        me.listofPokes[stolen] = stolenpoke;
                     }
                     else
                     {
@@ -264,7 +269,7 @@ namespace PokemonRoll
                 }
             }
             Console.WriteLine("You punch {0} in the nose breaking it, they pass out.", name);
-            Console.WriteLine("You drag him back to the police station.");
+            Console.WriteLine("You drag them back to the police station.");
             int candys = rand.Next(5) + 10;
             int cash = rand.Next(400) + 400;
             Console.WriteLine("Officer jenny hads you a reward of {0} rare candys and {1}$", candys, cash);
@@ -705,7 +710,7 @@ namespace PokemonRoll
                         return false;
                     }
                 }
-                Console.WriteLine("~3Your pokemon clash in furious battle!");
+                Console.WriteLine("~3{0}~3 and ~3{1}~3 clash in furious battle!",pokeout.getName(),pokebtl.getName());
                 int partylevel = me.getPartyLevel();
                 int difficulty = rand.Next(Convert.ToInt32(me.getPartyLevel() * (0.22 * dificultyMod)) + (50 * (me.badges * me.badges))) + offset;
                 log("PartyLv: " + partylevel + " difficulty:" +difficulty);
@@ -718,6 +723,7 @@ namespace PokemonRoll
                 else
                 {
                     pokeout.faint(true);
+                    offset -= pokeout._level;
                     if (me.getRevive())
                     {
                         Console.WriteLine("~2You use a revive from your pack!");
@@ -727,7 +733,6 @@ namespace PokemonRoll
                     {
                         pokeout = null;
                     }
-                    offset -= pokeout._level;
                 }
             }
             Console.WriteLine("~2You have defeated {0}!", trainername);
