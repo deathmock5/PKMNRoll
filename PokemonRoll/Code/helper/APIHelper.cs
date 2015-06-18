@@ -59,14 +59,19 @@ namespace PokemonRoll
             return null;
         }
 
-        public static T getObjectFromApiAndCache<T>(string site, string api)
+        public static T getObjectFromApiAndCache<T>(string api)
         {
             string something = "";
             bool needsaved = false;
+
+            //http://pokeapi.co/api/v1/pokemon/19/
             if(api[api.Length-1] == '/')
             {
                 api = api.Substring(0, api.Length - 1);
             }
+            //http://pokeapi.co/api/v1/pokemon/19
+            api = api.Replace("http://", "");
+            //pokeapi.co/api/v1/pokemon/19
             makeFolderIfNotExist("cache/" + api.Substring(0,api.LastIndexOf("/")));
             if (System.IO.File.Exists("cache/" + api + ".json"))
             {
@@ -77,8 +82,12 @@ namespace PokemonRoll
             }
             else
             {
-                something = getApiCall(site + api + "/");
+                something = getApiCall("http://" + api + "/");
                 needsaved = true;
+            }
+            if(something == null || something == "")
+            {
+                return default(T);
             }
             T temp = JsonConvert.DeserializeObject<T>(something);
             if (needsaved)
@@ -91,18 +100,7 @@ namespace PokemonRoll
             return temp;
         }
 
-        public static void polCache()
-        {
-            List<JsonPoke> pokes = new List<JsonPoke>();
-            for (int i = 1; i <= 150; i++)
-            {
-                string apicall = "api/v1/pokemon/" + i + "/";
-                string site = "http://pokeapi.co/";
-                JsonPoke temp = getObjectFromApiAndCache<JsonPoke>(site,apicall);
-                pokes.Add(temp);
-                Console.WriteLine("Loaded: {0}", temp.name);
-            }
-        }
+        
 
         public static void makeFolderIfNotExist(string folder)
         {

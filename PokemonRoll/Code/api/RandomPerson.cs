@@ -1,10 +1,12 @@
 ﻿using Newtonsoft.Json;
+using PokemonRoll.Code.helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DM_LangLib;
 
 namespace PokemonRoll
 {
@@ -60,6 +62,7 @@ namespace PokemonRoll
                     }
                 }
             }
+            LangHelper.WriteLine("game.info.randomstop");
         }
 
         public static string getName()

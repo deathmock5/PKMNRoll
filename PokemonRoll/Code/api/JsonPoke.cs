@@ -4,9 +4,99 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
+using System.Threading;
 
 namespace PokemonRoll
 {
+    class PokeApi
+    {
+        private static List<JsonPoke> listOfPokemonData = new List<JsonPoke>();
+        private static List<string> apiCallsToProcess = new List<string>();
+
+        private static Mutex mut = new Mutex();
+        private static Thread oThread;
+        private static bool running = false;
+
+        public static void startThread()
+        {
+            oThread = new Thread(threadedCall);
+            running = true;
+            oThread.Start();
+        }
+
+        public static void stopThread()
+        {
+            running = false;
+            oThread.Join();
+        }
+
+        public static void threadedCall()
+        {
+            int index = 1;
+            while(running)
+            {
+                if(index > 719)
+                {
+                    break;
+                }
+                mut.WaitOne(1000);
+                if(apiCallsToProcess.Count == 0)
+                {
+                    //there is none, lets pull up the cache some.
+                    for(int i = 1;i < 5; i++)
+                    {
+                        string apicall = "http://pokeapi.co/api/v1/pokemon/" + index++ + "/";
+                        apiCallsToProcess.Add(apicall);
+                    }
+                }
+                foreach(string call in apiCallsToProcess)
+                {
+                    JsonPoke temp = APIHelper.getObjectFromApiAndCache<JsonPoke>(call);
+                    if (temp == null)
+                    {
+                        break;
+                    }
+                    addPokemon(temp);
+                    Game.log("Loaded: " + call);
+                }
+                apiCallsToProcess.Clear();
+                mut.ReleaseMutex();
+                Thread.Sleep(100);
+            }
+        }
+
+        public static JsonPoke getPokemon(int id)
+        {
+            foreach(JsonPoke poke in listOfPokemonData)
+            {
+                if(poke.national_id == id)
+                {
+                    return poke;
+                }
+            }
+            //Not found.
+            string apicall = "http://pokeapi.co/api/v1/pokemon/" + id + "/";
+            apiCallsToProcess.Add(apicall);
+            Thread.Sleep(500);
+            return getPokemon(id);
+        }
+
+        private static void addPokemon(JsonPoke poke1)
+        {
+            mut.WaitOne(1000);
+            foreach(JsonPoke poke in listOfPokemonData)
+            {
+                if(poke.national_id == poke1.national_id)
+                {
+                    //Already exists
+                    return;
+                }
+            }
+            listOfPokemonData.Add(poke1);
+            mut.ReleaseMutex();
+        }
+    }
+
     [DataContract]
     class JsonPoke : JsonForward
     {

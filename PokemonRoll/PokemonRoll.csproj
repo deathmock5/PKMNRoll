@@ -51,19 +51,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Code\gameEvents\EggEvent.cs" />
+    <Compile Include="Code\gameEvents\GymEvent.cs" />
+    <Compile Include="Code\gameEvents\PokemonCenterEvent.cs" />
+    <Compile Include="Code\gameEvents\RareCandyEvent.cs" />
+    <Compile Include="Code\gameEvents\RocketEvent.cs" />
+    <Compile Include="Code\gameEvents\TrainerEvent.cs" />
+    <Compile Include="Code\gameEvents\TravelEvent.cs" />
+    <Compile Include="Code\gameEvents\WildEvent.cs" />
     <Compile Include="Code\helper\APIHelper.cs" />
     <Compile Include="Code\helper\CryptographyHelper.cs" />
     <Compile Include="Code\Game.cs" />
     <Compile Include="Code\GymLeader.cs" />
+    <Compile Include="Code\helper\LangHelper.cs" />
     <Compile Include="Code\Items.cs" />
-    <Compile Include="Code\PKMNWriter.cs" />
     <Compile Include="Code\Player.cs" />
     <Compile Include="Code\Pokemon.cs" />
     <Compile Include="Code\TradeablePoke.cs" />
-    <Compile Include="Code\JsonPoke.cs" />
+    <Compile Include="Code\api\JsonPoke.cs" />
+    <Compile Include="Code\gameEvents\GameEventBase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Code\RandomPerson.cs" />
+    <Compile Include="Code\api\RandomPerson.cs" />
     <Compile Include="Code\TrainerID.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +81,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icon1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LangLib\LangLib.csproj">
+      <Project>{8c434912-9183-4e98-b344-039a69c3400b}</Project>
+      <Name>LangLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

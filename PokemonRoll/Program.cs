@@ -14,12 +14,15 @@ namespace PokemonRoll
         [STAThread]
         static void Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.Unicode;
             Console.Title = "PokeRoll by deathmock@gmail.com";
+            
             File.WriteAllText("logfile.log","");
-            //APIHelper.polCache();
             try
             {
+                Game.Instance.init();
                 Game.Instance.start();
+                Game.Instance.shutdown();
             }
             catch(Exception e)
             {
@@ -32,14 +35,14 @@ namespace PokemonRoll
                 {
                     message += line + "\r\n";
                 }
-                if (sendMail(message, Game.Instance.me.name))
+                if (!sendMail(message, Game.Instance.player.name))
                 {
                     Console.WriteLine("Please send the contents of logfile.log to deathmock@gmail.com");
                 }
                 Console.WriteLine("Message: {0}", e.Message);
                 Console.WriteLine("Stacktrace: {0}",e.StackTrace);
+                Console.ReadLine();
             }
-            Console.ReadLine();
         }
 
         static bool sendMail(string message,string subject)

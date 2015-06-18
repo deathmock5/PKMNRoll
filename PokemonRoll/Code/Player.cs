@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
+using DM_LangLib;
 
 namespace PokemonRoll
 {
@@ -12,12 +13,15 @@ namespace PokemonRoll
     {
         public string name = "null";
         public TrainerID id = new TrainerID();
-        public List<Pokemon> listofPokes = new List<Pokemon>(); //0-5 are party. else are pc.
+        public List<Pokemon> listofPokes = new List<Pokemon>(); //Pokemon in pc.
+        public List<Pokemon> party = new List<Pokemon>();
+        public List<Pokemon> stolenPokes = new List<Pokemon>();
         public List<Item> listofitems = new List<Item>();
         public bool hasegg = false;
         public int badges = 0;
         public int champ = 0;
         public int cash = 0;
+        public int cycles = 0;
         
         public Player()
         {
@@ -30,15 +34,19 @@ namespace PokemonRoll
         //Output prints:
         public void printParty()
         {
-            Console.WriteLine("Current Party:");
+            Console.WriteLine("~5Current Party:");
             int i = 0;
             foreach(Pokemon poke in getParty())
             {
-                if(poke.fainted)
+                if(poke != null)
                 {
-                    Console.Write("~4FNT~8");
+                    if (poke.fainted)
+                    {
+                        Console.Write("~4FNT~8");
+                    }
+                    Console.WriteLine(" ~F{0}: {1}", i, poke);
                 }
-                Console.WriteLine(" {0}: {1}", i++, poke);
+                i++;
             }
         }
         public void printCash()
@@ -47,7 +55,7 @@ namespace PokemonRoll
         }
         public void printInventory()
         {
-            Console.WriteLine("Item In Bag:");
+            Console.WriteLine("~1Item In Bag:");
             foreach(Item item in listofitems)
             {
                 if(item.amount == 0)
@@ -56,7 +64,7 @@ namespace PokemonRoll
                 }
                 else
                 {
-                    Console.WriteLine(" {0}x{1}", item.amount, item.id);
+                    Console.WriteLine(" ~F{0}x{1}", item.amount, item.id);
                 }
             }
         }
@@ -64,41 +72,74 @@ namespace PokemonRoll
         {
             Console.WriteLine("Name: {0} ,badges: {1}, Cash: {2}, Dex: {3}", name, badges, cash, getDex());
         }
+        public void printContentsOfBox(int box)
+        {
+            int col = 0;
+            Console.WriteLine("Box {0}", box);
+            for (int i = 1; i <= 30; i++)
+            {
+                if (col++ == 5)
+                {
+                    col = 1;
+                    Console.WriteLine();
+                }
+                Pokemon poke = getPCPokemon(i * box);
+                if (poke != null)
+                {
+                    Console.Write(" {0}:{1} ", i, poke.getName());
+                }
+            }
+            Console.WriteLine();
+        }
 
         public List<Pokemon> getParty()
         {
-            List<Pokemon> pokes = new List<Pokemon>();
-            int maxsize = 6;
-            if (listofPokes.Count < 6)
+            return party;
+        }
+
+        public int getPartyCount()
+        {
+            int returnint = 0;
+
+            foreach(Pokemon poke in party)
             {
-                maxsize = listofPokes.Count;
-            }
-            for (int i = 0; i < maxsize; i++)
-            {
-                if(listofPokes[i] != null)
+                if (poke != null)
                 {
-                    pokes.Add(listofPokes[i]);
+                    returnint++;
                 }
             }
-            return pokes;
+            return returnint;
         }
 
         public Pokemon getPartyPokemon(int pchoice)
         {
-            if(pchoice >= 6 || pchoice >= listofPokes.Count)
+            if(pchoice >= 6 || pchoice >= party.Count)
             {
                 throw new IndexOutOfRangeException();
             }
+            return party[pchoice];
+        }
+        public Pokemon getPCPokemon(int pchoice)
+        {
+            if (pchoice >= listofPokes.Count)
+            {
+                return null;
+            }
             return listofPokes[pchoice];
         }
-
         internal void addPokemon(Pokemon eggpoke)
         {
-            if(listofPokes.Count >=6)
+            if(getPartyCount() < 6)
             {
-                Console.WriteLine("{0} was transported to the pc.",eggpoke);
+                //Add some pokemon to the party!
+                party.Add(eggpoke);
+                Console.WriteLine("{0} was added to your party.",eggpoke);
             }
-            listofPokes.Add(eggpoke);
+            else
+            {
+                listofPokes.Add(eggpoke);
+                Console.WriteLine("{0} was transported to the pc.", eggpoke);
+            }
         }
 
         public Pokemon getFirstPokemonInParty()
@@ -181,7 +222,7 @@ namespace PokemonRoll
 
         public int getDex()
         {
-            //TODO: this.
+            //TODO: Get dex.
             return -1;
         }
 
@@ -195,6 +236,8 @@ namespace PokemonRoll
             cash = (int)info.GetValue("player_cash", typeof(int));
             listofitems = (List<Item>)info.GetValue("player_inventory", typeof(List<Item>));
             champ = (int)info.GetValue("player_champ", typeof(int));
+            party = (List<Pokemon>)info.GetValue("player_party",typeof(List<Pokemon>));
+            stolenPokes = (List<Pokemon>)info.GetValue("player_stolen", typeof(List<Pokemon>));
         }
         
         //Serialization function.
@@ -208,6 +251,8 @@ namespace PokemonRoll
             info.AddValue("player_badges", badges);
             info.AddValue("player_cash", cash);
             info.AddValue("player_champ", champ);
+            info.AddValue("player_party", party);
+            info.AddValue("player_stolen", stolenPokes);
         }
 
         internal void addItems(Item itemtoadd)
@@ -223,7 +268,6 @@ namespace PokemonRoll
             listofitems.Add(itemtoadd);
         }
 
-
         internal bool getRevive()
         {
             Item revive = getItemIndexFromInventory(ItemID.revive);
@@ -237,5 +281,39 @@ namespace PokemonRoll
             }
             return false;
         }
+
+        public void giveOptionToGivePokemonLevels(int amount)
+        {
+            while (amount > 0)
+            {
+                printParty();
+                try
+                {
+                    int input = FormatQuestion.getIntOptionFromQuestion("Choose a pokemon to give levels to:");
+                    Pokemon poke = getPartyPokemon(input);
+                    input = FormatQuestion.getIntOptionFromQuestion("Give " + poke.getName() + "~3 how many levels (MAX:" + amount + "):");
+                    if (input == 0 || input < 0)
+                    {
+                        throw new InvalidOperationException("Cant give pokemon 0>= levels.");
+                    }
+                    else if (input <= amount)
+                    {
+                        poke.gainLvs(input);
+                        amount -= input;
+                    }
+                    else
+                    {
+                        poke.gainLvs(amount);
+                        amount -= input;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Game.log(e.Message);
+                    Console.WriteLine("You get a text from the professer: 'You can't do that.'");
+                }
+            }
+        }
+
     }
 }

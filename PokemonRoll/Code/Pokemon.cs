@@ -729,6 +729,9 @@ namespace PokemonRoll
         DIANCIE = 719,
         HOOPA = 720};
 
+    
+
+
     [Serializable()]
     class Pokemon : ISerializable
     {
@@ -804,6 +807,17 @@ namespace PokemonRoll
             info.AddValue("pkmn_ot", _ot);
             info.AddValue("pkmn_isshiny", isshiny);
             info.AddValue("pkmn_fainted", fainted);
+        }
+
+        public static Pokemon getRandomPoke(Random rand,Player player)
+        {
+            IDS pokeid = (IDS)rand.Next(720) + 1;
+            Pokemon poke = new Pokemon(pokeid, player.cycles + 5, player.id);
+            if (rand.Next(999) == 69)
+            {
+                poke.isshiny = true;
+            }
+            return poke;
         }
     }
 }
